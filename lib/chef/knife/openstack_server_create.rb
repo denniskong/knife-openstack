@@ -131,6 +131,11 @@ class Chef
       :boolean => true,
       :default => true
 
+      option :user_data_template_file,
+      :long => "--user-data-template-file",
+      :description => "Full path to user_data template file",
+      :default => false
+
       def tcp_test_ssh(hostname)
         tcp_socket = TCPSocket.new(hostname, 22)
         readable = IO.select([tcp_socket], nil, nil, 5)
@@ -185,6 +190,11 @@ class Chef
             "contents" => ''
           }]
       }
+
+      if config[:user_data_template_file]
+        user_data = render_template(config[:user_data_template_file])
+        server_def.merge!({:user_data => user_data})
+      end
 
       Chef::Log.debug("Name #{node_name}")
       Chef::Log.debug("Image #{locate_config_value(:image)}")
@@ -300,6 +310,12 @@ class Chef
       #lazy uuids
       chef_node_name = "os-"+rand.to_s.split('.')[1]
     end
+
+    def render_template(template = nil)
+      template = IO.read(template).chomp
+        Erubis::Eruby.new(template).evaluate(Knife::Core::BootstrapContext.new(config, config[:run_list], Chef::Config))
+    end
+
   end
 end
 end
