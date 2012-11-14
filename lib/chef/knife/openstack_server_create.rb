@@ -170,7 +170,8 @@ class Chef
             ready = ssh.exec!('[ -e /var/log/init_boot_finished.log ] &&  echo true')
             ready.strip! if ready
             Chef::Log.debug ready.inspect
-            if ready == "true"
+            if ready === "true"
+              Chef::Log.debug "Cloud init is ready, continue ..."
               yield
               true
             else
