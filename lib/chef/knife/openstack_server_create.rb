@@ -168,11 +168,13 @@ class Chef
         begin
           Net::SSH.start(hostname,config[:ssh_user], :keys => [config[:identity_file]]) do |ssh|
             ready = ssh.exec!('[ -e /var/log/init_boot_finished.log ] &&  echo true')
-            Chef::Log.debug ready.inspect
             ready.strip! if ready
+            Chef::Log.debug ready.inspect
             if ready == "true"
+              yield
               true
             else
+              sleep 2
               false
             end
           end
