@@ -166,22 +166,23 @@ class Chef
 
       def cloud_init_finished?(hostname)
         begin
-          Net::SSH.start(hostname,config[:ssh_user], :keys => [config[:identity_file]]) do |ssh|
-            ready = ssh.exec!('[ -e /var/log/init_boot_finished.log ] &&  echo true')
-            ready.strip! if ready
-            Chef::Log.debug ready.inspect
-            if ready === "true"
-              Chef::Log.debug "Cloud init is ready, continue ..."
-              yield
-              true
-            else
-              sleep 2
-              false
-            end
+          ssh = Net::SSH.start(hostname,config[:ssh_user], :keys => [config[:identity_file]])
+          ready = ssh.exec!('[ -e /var/log/init_boot_finished.log ] &&  echo true')
+          ready.strip! if ready
+          Chef::Log.debug ready.inspect
+          if ready === "true"
+            Chef::Log.debug "Cloud init is ready, continue ..."
+            yield
+            true
+          else
+            sleep 2
+            false
           end
         rescue Exception => e
           Chef::Log.debug e.message
           false
+        ensure
+          ssh.close
         end
       end
 
