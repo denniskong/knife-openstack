@@ -166,7 +166,7 @@ class Chef
 
       def cloud_init_finished?(hostname)
         begin
-          Net::SSH.start( fqdn,config[:ssh_user], :keys => [config[:identity_file]]) do |ssh|
+          Net::SSH.start(hostname,config[:ssh_user], :keys => [config[:identity_file]]) do |ssh|
             ready = ssh.exec!('[ -e /var/log/init_boot_finished.log ] &&  echo true')
             Chef::Log.debug ready.inspect
             ready.strip! if ready
