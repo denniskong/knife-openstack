@@ -134,6 +134,7 @@ class Chef
       option :user_data_template_file,
       :long => "--user-data-template-file",
       :description => "Full path to user_data template file",
+      :proc => Proc.new { |u| Chef::Config[:knife][:user_data_template_file] = u },
       :default => false
 
       def tcp_test_ssh(hostname)
