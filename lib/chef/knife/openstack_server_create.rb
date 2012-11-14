@@ -132,7 +132,7 @@ class Chef
       :default => true
 
       option :user_data_template_file,
-      :long => "--user-data-template-file",
+      :long => "--user-data-template-file TEMPLATE",
       :description => "Full path to user_data template file",
       :proc => Proc.new { |u| Chef::Config[:knife][:user_data_template_file] = u },
       :default => false
