@@ -164,6 +164,24 @@ class Chef
         tcp_socket && tcp_socket.close
       end
 
+      def cloud_init_finished?(hostname)
+        begin
+          Net::SSH.start( fqdn,config[:ssh_user], :keys => [config[:identity_file]]) do |ssh|
+            ready = ssh.exec!('[ -e /var/log/init_boot_finished.log ] &&  echo true')
+            Chef::Log.debug ready.inspect
+            ready.strip! if ready
+            if ready == "true"
+              true
+            else
+              false
+            end
+          end
+        rescue Exception => e
+          Chef::Log.debug e.message
+          false
+        end
+      end
+
       def run
         $stdout.sync = true
 
@@ -255,6 +273,13 @@ class Chef
       print "\n#{ui.color("Waiting for sshd", :magenta)}"
 
       print(".") until tcp_test_ssh(bootstrap_ip_address) {
+        sleep @initial_sleep_delay ||= 10
+        puts("done")
+      }
+
+      print "\n#{ui.color("Waiting for cloud-init to be finished", :magenta)}"
+
+      print(".") until cloud_init_finished?(bootstrap_ip_address) {
         sleep @initial_sleep_delay ||= 10
         puts("done")
       }
