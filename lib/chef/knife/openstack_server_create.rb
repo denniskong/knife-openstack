@@ -227,9 +227,6 @@ class Chef
         server_def.merge!({:user_data => user_data})
       end
 
-      puts server_def.inspect
-      exit 10
-
       Chef::Log.debug("Name #{node_name}")
       Chef::Log.debug("Image #{locate_config_value(:image)}")
       Chef::Log.debug("Flavor #{locate_config_value(:flavor)}")
