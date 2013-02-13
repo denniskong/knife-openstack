@@ -214,16 +214,21 @@ class Chef
         :flavor_ref => locate_config_value(:flavor),
         # :security_group => locate_config_value(:security_groups),
         :key_name => Chef::Config[:knife][:openstack_ssh_key_id],
-        :personality => [{
-            "path" => "/etc/chef/ohai/hints/openstack.json",
-            "contents" => ''
-          }]
+        :personality => [{"path" => "/etc/chef/ohai/hints/openstack.json",
+                          "contents" => ''},
+                         {"path" => "/etc/chef/ohai/plugins/openstack.rb",
+                           "contents" => File.open(File.join(File.dirname(__FILE__),"..","..","ohai","plugins","openstack.rb"), "rb").read
+                         }
+                        ]
       }
 
       if config[:user_data_template_file]
         user_data = render_template(config[:user_data_template_file])
         server_def.merge!({:user_data => user_data})
       end
+
+      puts server_def.inspect
+      exit 10
 
       Chef::Log.debug("Name #{node_name}")
       Chef::Log.debug("Image #{locate_config_value(:image)}")
