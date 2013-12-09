@@ -396,7 +396,7 @@ class Chef
 
       print "\n#{ui.color("Waiting for cloud-init to be finished", :magenta)}"
 
-      print(".") until cloud_init_finished?(bootstrap_ip_address,locate_config_value(:ssh_port)) {
+      print(".") until cloud_init_finished?(bootstrap_ip_address) {
         sleep @initial_sleep_delay ||= 10
         puts("done")
       }
