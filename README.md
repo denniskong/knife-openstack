@@ -1,9 +1,9 @@
 Knife OpenStack
 ===============
 
-This is the official Opscode Knife plugin for OpenStack Compute (Nova). This plugin gives knife the ability to create, bootstrap and manage instances in OpenStack Compute clouds. It has been tested against the `Diablo` and `Essex` releases in configurations using Keystone against the OpenStack API (as opposed to the EC2 API).
+This is the official Opscode Knife plugin for OpenStack Compute (Nova). This plugin gives knife the ability to create, bootstrap and manage instances in OpenStack Compute clouds. It has been tested against the `Diablo` through `Grizzly` releases in configurations using Keystone against the OpenStack API (as opposed to the EC2 API).
 
-Please refer to the CHANGELOG.md for version history and known limitations. If you are using Floating IP addresses, please refer to the "Working with Floating IPs" section below.
+Please refer to the [CHANGELOG](CHANGELOG.md) for version history and known issues.
 
 # Installation #
 
@@ -34,6 +34,10 @@ If your knife.rb file will be checked into a SCM system (ie readable by others) 
     knife[:openstack_auth_url] = "#{ENV['OS_AUTH_URL']}"
     knife[:openstack_tenant] = "#{ENV['OS_TENANT_NAME']}"
 
+If your OpenStack deployment is over SSL, but does not have a valid certificate, you can add the following option to bypass SSL check:
+
+    knife[:openstack_insecure] = true
+
 You also have the option of passing your OpenStack API Username/Password into the individual knife subcommands using the `-A` (or `--openstack-username`) `-K` (or `--openstack-password`) command options
 
     # provision a new image named kb01
@@ -49,6 +53,19 @@ Additionally the following options may be set in your `knife.rb`:
 # Working with Floating IPs #
 
 To use a floating IP address while bootstrapping nodes, use the `-a` or `--floating-ip` option. For the node to have the floating IP address after bootstrapping, it is required to use the new `openstack.rb` Ohai plugin, waiting for the next Ohai release or installed using the [ohai cookbook](https://github.com/opscode-cookbooks/ohai). https://github.com/mattray/ohai/tree/OHAI-381 is the ticket for this.
+
+# Working with Windows Images #
+
+Provisioning and bootstrapping for Windows 2003/2008 images is now supported. The Windows images need to have WinRM enabled with Basic Authentication configured. Current support does not support Kerberos Authentication.
+
+Example:
+
+    knife openstack server create -I <Image_ID> -f <Flavor_ID> -S <keypair_name> --bootstrap-protocol winrm -P <Administrator_Password> -x Administrator -N <chef_node_name> --template windows-chef-client-msi.erb
+
+NOTE:
+* Bootstrap Protocol (`--bootstrap-protocol`) is required to be set to `winrm`.
+* Administrator Username (`--winrm-user` or `-x`) and Password (`-P`) are required parameters.
+* If the Template File (`--template`) is not specified it defaults to a Linux distro (most likely Ubuntu).
 
 # Subcommands #
 
@@ -72,12 +89,17 @@ Outputs a list of all servers in the currently configured OpenStack Compute clou
 knife openstack flavor list
 ---------------------------
 
-Outputs a list of all available flavors (available hardware configuration for a server) available to the currently configured OpenStack Compute cloud account. Each flavor has a unique combination of virtual cpus, disk space and memory capacity. This data can be useful when choosing a flavor id to pass to the `knife openstack server create` subcommand.
+Outputs a list of all available flavors (available hardware configuration for a server) available to the currently configured OpenStack Compute cloud account. Each flavor has a unique combination of virtual cpus, disk space and memory capacity. This data may be useful when choosing a flavor id to pass to the `knife openstack server create` subcommand.
 
 knife openstack image list
 --------------------------
 
-Outputs a list of all available images available to the currently configured OpenStack Compute cloud account. An image is a collection of files used to create or rebuild a server. This data can be useful when choosing an image id to pass to the `knife openstack server create` subcommand.
+Outputs a list of all available images and snapshots available to the currently configured OpenStack Compute cloud account. An image is a collection of files used to create or rebuild a server. The retuned list filters out image names ending in 'initrd', 'kernel', 'loader', 'virtual' or 'vmlinuz' (this may be disabled with `--disable-filter`). This data may be useful when choosing an image id to pass to the `knife openstack server create` subcommand.
+
+knife openstack group list
+--------------------
+
+Outputs a list of the security groups available to the currently configured OpenStack Compute cloud account. Each group may have multiple rules. This data may be useful when choosing your security group(s) to pass to the `knife openstack server create` subcommand.
 
 # License #
 
@@ -85,7 +107,9 @@ Author:: Seth Chisamore (<schisamo@opscode.com>)
 
 Author:: Matt Ray (<matt@opscode.com>)
 
-Copyright:: Copyright (c) 2011-2012 Opscode, Inc.
+Author:: Chirag Jog (<chirag@clogeny.com>)
+
+Copyright:: Copyright (c) 2011-2013 Opscode, Inc.
 
 License:: Apache License, Version 2.0
 
