@@ -389,7 +389,7 @@ class Chef
 
       print "\n#{ui.color("Waiting for sshd", :magenta)}"
 
-      print(".") until tcp_test_ssh(bootstrap_ip_address) {
+      print(".") until tcp_test_ssh(bootstrap_ip_address,locate_config_value(:ssh_port)) {
         sleep @initial_sleep_delay ||= 10
         puts("done")
       }
